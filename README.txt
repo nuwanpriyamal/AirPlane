@@ -22,3 +22,7 @@
 - All database connection settings are in `dao/DBConnection.java`.
 - The project uses Java Swing for the GUI for maximum compatibility.
 - For any issues, check your Java version and MySQL server status. 
+
+
+
+400 solution - 0710891276 / nuwan priyamal
