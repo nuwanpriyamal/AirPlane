@@ -61,4 +61,13 @@ This directory contains the source code for a Java Swing-based Airline Ticket Bo
 
 ---
 
+
+******
+   - Open the project as a Maven project in your IDE.
+   - Build the project using Maven.
+   - Run the application. The main entry point is `ui.LoginFrame` (run its `main` method).
+
+*******
+
+------
 GSCOMP269_Priyamal G.A.N.
