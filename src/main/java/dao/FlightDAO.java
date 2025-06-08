@@ -50,8 +50,8 @@ public class FlightDAO {
             ps.setInt(1, flight.getAirplaneId());
             ps.setInt(2, flight.getOriginId());
             ps.setInt(3, flight.getDestinationId());
-            ps.setTimestamp(4, new Timestamp(flight.getDepartureTime().getTime()));
-            ps.setTimestamp(5, new Timestamp(flight.getArrivalTime().getTime()));
+            ps.setTimestamp(4, new java.sql.Timestamp(flight.getDepartureTime().getTime()));
+            ps.setTimestamp(5, new java.sql.Timestamp(flight.getArrivalTime().getTime()));
             ps.setInt(6, flight.getId());
             return ps.executeUpdate() > 0;
         }
@@ -86,6 +86,25 @@ public class FlightDAO {
             }
         }
         return flights;
+    }
+
+    public boolean isAirplaneAvailable(int airplaneId, java.util.Date dep, java.util.Date arr) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM flights WHERE airplane_id = ? AND " +
+                "((departure_time < ? AND arrival_time > ?) OR (departure_time < ? AND arrival_time > ?) OR (departure_time >= ? AND arrival_time <= ?))";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, airplaneId);
+            ps.setTimestamp(2, new java.sql.Timestamp(arr.getTime()));
+            ps.setTimestamp(3, new java.sql.Timestamp(dep.getTime()));
+            ps.setTimestamp(4, new java.sql.Timestamp(arr.getTime()));
+            ps.setTimestamp(5, new java.sql.Timestamp(dep.getTime()));
+            ps.setTimestamp(6, new java.sql.Timestamp(dep.getTime()));
+            ps.setTimestamp(7, new java.sql.Timestamp(arr.getTime()));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) == 0;
+            }
+        }
+        return false;
     }
 
     private FlightDTO mapRowToFlightDTO(ResultSet rs) throws SQLException {

@@ -18,7 +18,7 @@ public class DashboardFrame extends JFrame {
         JPanel buttonPanel = new JPanel();
         JButton flightsBtn = new JButton("View Flights");
         buttonPanel.add(flightsBtn);
-        flightsBtn.addActionListener(e -> new FlightListFrame().setVisible(true));
+        flightsBtn.addActionListener(e -> new FlightListFrame(user).setVisible(true));
 
         if ("CUSTOMER".equals(user.getRole())) {
             JButton bookBtn = new JButton("Book Flight");
@@ -29,6 +29,12 @@ public class DashboardFrame extends JFrame {
         JButton bookingsBtn = new JButton("View Bookings");
         buttonPanel.add(bookingsBtn);
         bookingsBtn.addActionListener(e -> new BookingListFrame(user).setVisible(true));
+
+        if ("ADMIN".equals(user.getRole()) || "OPERATOR".equals(user.getRole())) {
+            JButton scheduleBtn = new JButton("Schedule Flight");
+            buttonPanel.add(scheduleBtn);
+            scheduleBtn.addActionListener(e -> new ScheduleFlightFrame().setVisible(true));
+        }
 
         add(buttonPanel, BorderLayout.CENTER);
 

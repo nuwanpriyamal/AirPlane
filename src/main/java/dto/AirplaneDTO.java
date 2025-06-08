@@ -19,4 +19,9 @@ public class AirplaneDTO {
     public void setCode(String code) { this.code = code; }
     public String getCapacityType() { return capacityType; }
     public void setCapacityType(String capacityType) { this.capacityType = capacityType; }
+
+    @Override
+    public String toString() {
+        return code;
+    }
 } 

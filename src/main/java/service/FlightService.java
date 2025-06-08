@@ -34,4 +34,40 @@ public class FlightService {
             return null;
         }
     }
+
+    public boolean addFlight(FlightDTO flight) {
+        try {
+            return flightDAO.addFlight(flight);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isAirplaneAvailable(int airplaneId, java.util.Date dep, java.util.Date arr) {
+        try {
+            return flightDAO.isAirplaneAvailable(airplaneId, dep, arr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteFlight(int id) {
+        try {
+            return flightDAO.deleteFlight(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateFlight(FlightDTO flight) {
+        try {
+            return flightDAO.updateFlight(flight);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 } 

@@ -1,46 +1,43 @@
 package ui;
 
-import dto.BookingDTO;
-import dto.FlightDTO;
 import dto.UserDTO;
-import service.BookingService;
+import dto.FlightDTO;
+import service.UserService;
 import service.FlightService;
-import java.util.HashSet;
-import java.util.Set;
+import service.BookingService;
+import dao.DBConnection;
+import dto.BookingDTO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class BookFlightFrame extends JFrame {
-    public BookFlightFrame(UserDTO user) {
-        super("Book a Flight");
-        setSize(500, 250);
+public class CreateBookingFrame extends JFrame {
+    public CreateBookingFrame(UserDTO admin) {
+        super("Create Booking (Admin)");
+        setSize(600, 400);
         setLocationRelativeTo(null);
-        setLayout(new GridLayout(5, 2));
+        setLayout(new GridLayout(7, 2));
+
+        UserService userService = new UserService();
+        List<UserDTO> users = userService.getAllUsers();
+        JComboBox<UserDTO> userCombo = new JComboBox<>();
+        for (UserDTO u : users) userCombo.addItem(u);
 
         FlightService flightService = new FlightService();
-        BookingService bookingService = new BookingService();
         List<FlightDTO> flights = flightService.getAllFlights();
         JComboBox<FlightDTO> flightCombo = new JComboBox<>();
-        for (FlightDTO f : flights) {
-            flightCombo.addItem(f);
-        }
+        for (FlightDTO f : flights) flightCombo.addItem(f);
+
         JPanel seatPanel = new JPanel();
         JLabel selectedSeatLabel = new JLabel("Selected Seat: ");
-        add(new JLabel("Select Flight:"));
-        add(flightCombo);
-        add(new JLabel("Seat Selection:"));
-        JScrollPane seatScroll = new JScrollPane(seatPanel);
-        seatScroll.setPreferredSize(new Dimension(500, 350));
-        add(seatScroll);
-        add(selectedSeatLabel);
-        add(new JLabel());
         JComboBox<String> classCombo = new JComboBox<>(new String[]{"FIRST", "BUSINESS", "ECONOMY"});
-        add(new JLabel("Service Class:"));
-        add(classCombo);
-
         final String[] selectedSeat = {null};
 
         Runnable updateSeats = () -> {
@@ -51,10 +48,10 @@ public class BookFlightFrame extends JFrame {
             int rows = 30;
             String seatLetters = "ABCDEF";
             try {
-                java.sql.Connection conn = dao.DBConnection.getConnection();
-                java.sql.PreparedStatement ps = conn.prepareStatement("SELECT rowCount, seat_letters FROM flights WHERE id = ?");
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT rowCount, seat_letters FROM flights WHERE id = ?");
                 ps.setInt(1, flight.getId());
-                java.sql.ResultSet rs = ps.executeQuery();
+                ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     rows = rs.getInt("rowCount");
                     seatLetters = rs.getString("seat_letters");
@@ -62,10 +59,10 @@ public class BookFlightFrame extends JFrame {
             } catch (Exception ex) {}
             Set<String> bookedSeats = new HashSet<>();
             try {
-                java.sql.Connection conn = dao.DBConnection.getConnection();
-                java.sql.PreparedStatement ps = conn.prepareStatement("SELECT seat_number FROM bookings WHERE flight_id = ?");
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT seat_number FROM bookings WHERE flight_id = ?");
                 ps.setInt(1, flight.getId());
-                java.sql.ResultSet rs = ps.executeQuery();
+                ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     bookedSeats.add(rs.getString("seat_number"));
                 }
@@ -95,27 +92,43 @@ public class BookFlightFrame extends JFrame {
         updateSeats.run();
         flightCombo.addActionListener(e -> updateSeats.run());
 
-        JButton bookBtn = new JButton("Book");
-        add(new JLabel());
-        add(bookBtn);
+        JScrollPane seatScroll = new JScrollPane(seatPanel);
+        seatScroll.setPreferredSize(new Dimension(500, 350));
 
-        bookBtn.addActionListener(e -> {
+        add(new JLabel("Select User:")); add(userCombo);
+        add(new JLabel("Select Flight:")); add(flightCombo);
+        add(new JLabel("Seat Selection:")); add(seatScroll);
+        add(selectedSeatLabel); add(new JLabel());
+        add(new JLabel("Service Class:")); add(classCombo);
+
+        JButton saveBtn = new JButton("Create Booking");
+        JButton cancelBtn = new JButton("Cancel");
+        add(saveBtn); add(cancelBtn);
+
+        saveBtn.addActionListener(e -> {
+            UserDTO selectedUser = (UserDTO) userCombo.getSelectedItem();
             FlightDTO selectedFlight = (FlightDTO) flightCombo.getSelectedItem();
             String seat = selectedSeat[0];
             String serviceClass = (String) classCombo.getSelectedItem();
-            if (selectedFlight == null || seat == null || serviceClass == null) {
-                JOptionPane.showMessageDialog(this, "Please select a flight, seat, and class.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (selectedUser == null || selectedFlight == null || seat == null || serviceClass == null) {
+                JOptionPane.showMessageDialog(this, "Please select user, flight, seat, and class.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            BookingDTO booking = new BookingDTO(0, user.getId(), selectedFlight.getId(), seat, new Date(), serviceClass);
+            BookingDTO booking = new BookingDTO(0, selectedUser.getId(), selectedFlight.getId(), seat, new Date(), serviceClass);
+            BookingService bookingService = new BookingService();
             boolean success = bookingService.addBooking(booking);
             if (success) {
-                JOptionPane.showMessageDialog(this, "Booking successful!");
+                JOptionPane.showMessageDialog(this, "Booking created!");
                 dispose();
+                new BookingListFrame(admin).setVisible(true);
             } else {
-                JOptionPane.showMessageDialog(this, "Booking failed. The seat may have just been booked by someone else.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to create booking. The seat may have just been booked.", "Error", JOptionPane.ERROR_MESSAGE);
                 updateSeats.run();
             }
+        });
+        cancelBtn.addActionListener(e -> {
+            dispose();
+            new BookingListFrame(admin).setVisible(true);
         });
     }
 } 

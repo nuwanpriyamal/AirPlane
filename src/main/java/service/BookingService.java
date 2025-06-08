@@ -43,4 +43,22 @@ public class BookingService {
             return null;
         }
     }
+
+    public boolean deleteBooking(int id) {
+        try {
+            return bookingDAO.deleteBooking(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateBooking(BookingDTO booking) {
+        try {
+            return bookingDAO.updateBooking(booking);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 } 

@@ -33,4 +33,17 @@ public class FlightDTO {
     public void setDepartureTime(Date departureTime) { this.departureTime = departureTime; }
     public Date getArrivalTime() { return arrivalTime; }
     public void setArrivalTime(Date arrivalTime) { this.arrivalTime = arrivalTime; }
+
+    @Override
+    public String toString() {
+        // Try to show origin and destination names
+        try {
+            service.AirportService airportService = new service.AirportService();
+            String originName = airportService.getAirportById(originId) != null ? airportService.getAirportById(originId).getName() : String.valueOf(originId);
+            String destName = airportService.getAirportById(destinationId) != null ? airportService.getAirportById(destinationId).getName() : String.valueOf(destinationId);
+            return "Flight " + id + ": " + originName + " → " + destName;
+        } catch (Exception e) {
+            return "Flight " + id + " from " + originId + " to " + destinationId;
+        }
+    }
 } 

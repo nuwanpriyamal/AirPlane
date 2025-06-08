@@ -14,7 +14,14 @@ public class BookingDAO {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return mapRowToBookingDTO(rs);
+                return new BookingDTO(
+                    rs.getInt("id"),
+                    rs.getInt("user_id"),
+                    rs.getInt("flight_id"),
+                    rs.getString("seat_number"),
+                    rs.getTimestamp("booking_date"),
+                    rs.getString("service_class")
+                );
             }
         }
         return null;
@@ -45,14 +52,11 @@ public class BookingDAO {
     }
 
     public boolean updateBooking(BookingDTO booking) throws SQLException {
-        String sql = "UPDATE bookings SET user_id = ?, flight_id = ?, seat_number = ?, booking_date = ?, service_class = ? WHERE id = ?";
+        String sql = "UPDATE bookings SET seat_number = ?, service_class = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, booking.getUserId());
-            ps.setInt(2, booking.getFlightId());
-            ps.setString(3, booking.getSeatNumber());
-            ps.setTimestamp(4, new Timestamp(booking.getBookingDate().getTime()));
-            ps.setString(5, booking.getServiceClass());
-            ps.setInt(6, booking.getId());
+            ps.setString(1, booking.getSeatNumber());
+            ps.setString(2, booking.getServiceClass());
+            ps.setInt(3, booking.getId());
             return ps.executeUpdate() > 0;
         }
     }
